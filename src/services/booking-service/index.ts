@@ -3,7 +3,6 @@ import bookingRepository from "@/repositories/booking-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
 import roomRepository from "@/repositories/room-repository";
 import ticketRepository from "@/repositories/ticket-repository";
-import { resourceUsage } from "process";
 
 async function getBooking(userId: number){
     const booking = await bookingRepository.findByUserId(userId)
@@ -49,9 +48,23 @@ async function postBookingRoom(userId: number, roomId: number){
     return bookingRepository.createBooking(userId, roomId)
 }
 
+async function putBookingRoom(userId: number, roomId: number){
+    await checkValidBooking(roomId);
+
+    const booking = await bookingRepository.findByUserId(userId);
+    const id = booking.id;
+
+    if(!booking || booking.userId !== userId) {
+        throw cannotBookingError();
+    }
+
+    return bookingRepository.upsertBooking(roomId, userId, id)
+}
+
 const bookingService = {
     getBooking,
     postBookingRoom,
+    putBookingRoom,
 };
 
 
